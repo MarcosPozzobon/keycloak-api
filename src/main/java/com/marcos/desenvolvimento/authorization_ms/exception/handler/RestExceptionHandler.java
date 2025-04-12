@@ -1,8 +1,6 @@
 package com.marcos.desenvolvimento.authorization_ms.exception.handler;
 
-import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
-import com.marcos.desenvolvimento.authorization_ms.exception.InvalidUserCreationException;
-import com.marcos.desenvolvimento.authorization_ms.exception.UserExistsException;
+import com.marcos.desenvolvimento.authorization_ms.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -43,6 +41,28 @@ public class RestExceptionHandler {
                 .details(ex.getMessage())
                 .status(422)
                 .title("Unprocessable entity")
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(InvalidLoginRequestException.class)
+    public ExceptionFilters handleInvalidLoginRequestException(final InvalidLoginRequestException ex) {
+        return ExceptionFilters.builder()
+                .timestamp(LocalDateTime.now())
+                .details(ex.getMessage())
+                .status(422)
+                .title("Unprocessable entity")
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(AuthenticationContextException.class)
+    public ExceptionFilters handleAuthenticationContextException(final AuthenticationContextException ex) {
+        return ExceptionFilters.builder()
+                .timestamp(LocalDateTime.now())
+                .details(ex.getMessage())
+                .status(401)
+                .title("Unauthorized")
                 .build();
     }
 

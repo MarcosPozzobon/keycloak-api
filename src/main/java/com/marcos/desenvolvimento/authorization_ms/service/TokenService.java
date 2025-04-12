@@ -5,17 +5,30 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.Map;
 
 
 @Service
 public class TokenService {
 
     private static final String JWKS_URL = "http://localhost:8080/realms/DESENVOLVIMENTO/protocol/openid-connect/certs";
+
+    public Map<String, Object> getClaims(String validToken) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(validToken);
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+            return claimsSet.getClaims();
+        } catch (ParseException e) {
+            throw new RuntimeException("Erro ao decodificar token JWT", e);
+        }
+    }
 
     public boolean isValidToken(String authorizationHeader) {
         try {

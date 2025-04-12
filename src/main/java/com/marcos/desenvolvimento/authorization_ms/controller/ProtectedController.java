@@ -3,6 +3,7 @@ package com.marcos.desenvolvimento.authorization_ms.controller;
 import com.marcos.desenvolvimento.authorization_ms.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,4 +27,12 @@ public class ProtectedController {
         return null;
     }
 
+    @GetMapping("admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String onlyAdminCanSeeThis(@RequestHeader("Authorization") String authorizationHeader){
+        if(tokenService.isValidToken(authorizationHeader)){
+            return "if you can see this you are an admin and you are fully authenticated.";
+        }
+        return "failed to validate the token!";
+    }
 }

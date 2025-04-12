@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final KeycloakService keycloakService;
     private final LoginService loginService;
+    private final KeycloakService keycloakService;
+
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.status(200).body(loginService.authenticate(request));
+    public ResponseEntity<TokenResponseDTO> login(@RequestBody final LoginRequest loginRequest) {
+        return ResponseEntity.status(200).body(loginService.setUserAuthenticationContext(loginRequest));
     }
 
     @PostMapping("/register")
