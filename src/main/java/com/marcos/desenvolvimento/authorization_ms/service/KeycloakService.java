@@ -1,9 +1,11 @@
 package com.marcos.desenvolvimento.authorization_ms.service;
 
+import com.marcos.desenvolvimento.authorization_ms.dto.request.RegisterRequest;
 import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InvalidUserCreationException;
 import com.marcos.desenvolvimento.authorization_ms.exception.UserExistsException;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class KeycloakService {
 
@@ -51,46 +54,52 @@ public class KeycloakService {
                 .build();
     }
 
-    public void createUser(String username, String password, String email, String firstName, String lastName) {
+    public void createUser(final RegisterRequest request) {
         Keycloak keycloak = getKeycloakInstance();
         RealmResource realmResource = keycloak.realm(realm);
         UsersResource usersResource = realmResource.users();
 
         UserRepresentation user = new UserRepresentation();
 
-        validateUserCreationInput(username, password, email, firstName, lastName);
+        validateUserCreationInput(request);
 
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUsername(username);
-        user.setEmail(email);
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setUsername(request.username());
+        user.setEmail(request.email());
         user.setEnabled(true);
         user.setEmailVerified(true);
 
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setTemporary(false);
         credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(password);
+        credential.setValue(request.password());
         user.setCredentials(Collections.singletonList(credential));
 
         Response response = usersResource.create(user);
-        int status = response.getStatus();
 
-        switch(status){
-            case 409 -> throw new UserExistsException("User already exists.");
-            case 500 -> throw new InternalServerErrorException("An error ocurred while trying to create an user. Contact the administrator.");
-            default -> throw new InternalServerErrorException("An unhandled inaccuracy occurred. Please contact the system administrator.");
+        if(response.getStatus() == 409){
+            throw new UserExistsException("User already exists.");
         }
+
+        if(response.getStatus() == 500){
+            throw new InternalServerErrorException("An error ocurred while trying to create an user. Contact the administrator.");
+        }
+
+        if(response.getStatus() == 201){
+            log.info("Creating user {}...", request.username());
+        }
+
     }
 
-    private void validateUserCreationInput(String username, String password, String email, String firstName, String lastName) {
-        if ((username == null || username.isEmpty()) && (email == null || email.isEmpty())) {
+    private void validateUserCreationInput(final RegisterRequest registerRequest) {
+        if ((registerRequest.username() == null || registerRequest.username().isEmpty()) && (registerRequest.email() == null || registerRequest.email().isEmpty())) {
             throw new InvalidUserCreationException("The login must be set. Email or username.");
         }
-        if (password == null || password.isEmpty()) {
+        if (registerRequest.password() == null || registerRequest.password().isEmpty()) {
             throw new InvalidUserCreationException("The password cannot be null or empty.");
         }
-        if ((firstName == null || firstName.isEmpty()) && (lastName == null || lastName.isEmpty())) {
+        if ((registerRequest.firstName() == null || registerRequest.firstName().isEmpty()) && (registerRequest.lastName() == null || registerRequest.lastName().isEmpty())) {
             throw new InvalidUserCreationException("The user first name cannot be null or empty.");
         }
     }

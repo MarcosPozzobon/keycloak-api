@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/api/v1/auth")
 @RequiredArgsConstructor
+@CrossOrigin(value = "*")
 public class AuthController {
 
     private final LoginService loginService;
@@ -27,8 +28,8 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        keycloakService.createUser(request.username(), request.password(), request.email(), request.firstName(), request.lastName());
-        return ResponseEntity.ok("Usuário registrado com sucesso!");
+    public ResponseEntity<String> register(@RequestBody final RegisterRequest request) {
+        keycloakService.createUser(request);
+        return ResponseEntity.ok("User successfully registered.");
     }
 }

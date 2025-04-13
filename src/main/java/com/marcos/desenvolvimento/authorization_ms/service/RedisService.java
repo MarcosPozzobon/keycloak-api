@@ -19,9 +19,11 @@ public class RedisService {
         redisTemplate.opsForValue().set(key, value);
     }
 
-    public String buscarDado(String chave) {
-        return (String) redisTemplate.opsForValue().get(chave);
-    }
+    /*
+    public List<String> getRoles(String key) {
+        return redisTemplate.opsForValue().get(key); // corrigir
+        //return (String) redisTemplate.opsForValue().get(chave);
+    }*/
 
     @CachePut(value = "dados", key = "#chave")
     public String salvarDadoComCache(String chave, String valor) {
