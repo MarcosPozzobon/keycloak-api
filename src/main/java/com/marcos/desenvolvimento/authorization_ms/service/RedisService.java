@@ -25,14 +25,9 @@ public class RedisService {
         //return (String) redisTemplate.opsForValue().get(chave);
     }*/
 
-    @CachePut(value = "dados", key = "#chave")
-    public String salvarDadoComCache(String chave, String valor) {
-        return valor;
-    }
-
-    @Cacheable(value = "dados", key = "#chave")
-    public String buscarDadoComCache(String chave) {
-        return "Buscando do banco...";
+    @Cacheable(value = "data", key = "#key")
+    public String findCachedTokenAndPermissions(String token) {
+        return (String) redisTemplate.opsForValue().get(token);
     }
 
     @CacheEvict(value = "dados", key = "#chave")

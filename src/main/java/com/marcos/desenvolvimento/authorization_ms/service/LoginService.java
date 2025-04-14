@@ -36,6 +36,20 @@ public class LoginService {
     @Value(value = "${spring.security.oauth2.client.registration.keycloak.client-secret}")
     private String clientSecret;
 
+    public void verifyUserAuthenticationContext(String token){
+
+        if(!tokenService.isValidToken(token)){
+            throw new GenericKeycloakException();
+        }
+
+        var result = redisService.findCachedTokenAndPermissions(token);
+        log.info("Resultado: " + result);
+
+
+
+
+    }
+
 
     public TokenResponseDTO setUserAuthenticationContext(final LoginRequest loginRequest){
         if(!isLoginRequestValid(loginRequest)){

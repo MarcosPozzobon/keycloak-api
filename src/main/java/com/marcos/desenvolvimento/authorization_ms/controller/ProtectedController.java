@@ -29,13 +29,11 @@ public class ProtectedController {
         return null;
     }
 
-    /*
+
     @GetMapping("admin")
     @PreAuthorize("hasRole('ADMIN')")
     public String onlyAdminCanSeeThis(@RequestHeader("Authorization") String authorizationHeader){
-        if(loginService.verifyUserAuthenticationContext(authorizationHeader)){
-            return "if you can see this you are an admin and you are fully authenticated.";
-        }
+        loginService.verifyUserAuthenticationContext(authorizationHeader);
         return "failed to validate the token!";
-    }*/
+    }
 }
