@@ -3,22 +3,19 @@ package com.marcos.desenvolvimento.authorization_ms.service;
 import com.marcos.desenvolvimento.authorization_ms.client.KeycloakClient;
 import com.marcos.desenvolvimento.authorization_ms.dto.request.LoginRequest;
 import com.marcos.desenvolvimento.authorization_ms.dto.response.TokenResponseDTO;
-import com.marcos.desenvolvimento.authorization_ms.exception.AuthenticationContextException;
+import com.marcos.desenvolvimento.authorization_ms.exception.GenericKeycloakException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InvalidLoginRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -45,10 +42,10 @@ public class LoginService {
             throw new InvalidLoginRequestException("Invalid request!");
         }
 
-        TokenResponseDTO authenticatedUserToken = authenticate(loginRequest);
-        //var roles = getUserRolesByToken(authenticatedUserToken.token());
+        TokenResponseDTO authenticatedUserToken = getToken(loginRequest);
+        var roles = getUserRolesByToken(authenticatedUserToken.token());
 
-       // redisService.setAuthenticationCache(authenticatedUserToken.token(), beanUtils.toJson(roles));
+        redisService.setAuthenticationCache(authenticatedUserToken.token(), beanUtils.toJson(roles));
         return authenticatedUserToken;
     }
 
@@ -63,26 +60,33 @@ public class LoginService {
         return true;
     }
 
-    public TokenResponseDTO authenticate(final LoginRequest loginRequest) {
+    public TokenResponseDTO getToken(final LoginRequest loginRequest) {
+        var result =
+                Optional.ofNullable(
+                        keycloakClient.getKeycloakTokenByLoginAndPassword(
+                                loginRequest.username(),
+                                loginRequest.password())
+                ).orElse(null);
 
-        String result = keycloakClient.getKeycloakTokenByLoginAndPassword(loginRequest.username(), loginRequest.password());
+        if(result.contains("invalid_grant") || result.contains("Invalid user credentials")){
+            throw new GenericKeycloakException("The user does not exists or the credentials are not ok.");
+        }
+
         JSONObject jsonResponse = new JSONObject(result);
 
-        if(jsonResponse.getString("acessToken") != null && !jsonResponse.getString("accessToken").isEmpty()){
-
+        if(jsonResponse.getString("access_token") == null && jsonResponse.getString("access_token").isEmpty()){
+            throw new InternalServerErrorException("Null api response from Keycloak. Contact an administrator.");
         }
 
-
-
-
-            return new TokenResponseDTO(null, null, null);
+        if(jsonResponse.getString("refresh_token") == null && jsonResponse.getString("refresh_token").isEmpty()){
+            throw new InternalServerErrorException("Error in api response from Keycloak. Contact an administrator.");
         }
-        //return null;
+
+        return new TokenResponseDTO(jsonResponse.getString("access_token"), jsonResponse.getString("refresh_token"), jsonResponse.getInt("expires_in"));
     }
 
-    /*
     public List<String> getUserRolesByToken(String token) {
-        Map<String, Object> claims = tokenService.getClaims(token);
+        var claims = tokenService.getClaims(token);
 
         Map<String, Object> resourceAccess = (Map<String, Object>) claims.get("resource_access");
         if (resourceAccess == null) {
@@ -96,5 +100,8 @@ public class LoginService {
 
         List<String> roles = (List<String>) springClientAccess.get("roles");
         return roles != null ? roles : Collections.emptyList();
-    }*/
+    }
+
+}
+
 

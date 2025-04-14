@@ -66,4 +66,15 @@ public class RestExceptionHandler {
                 .build();
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(GenericKeycloakException.class)
+    public ExceptionFilters handleGenericKeycloakException(final GenericKeycloakException ex) {
+        return ExceptionFilters.builder()
+                .timestamp(LocalDateTime.now())
+                .details(ex.getMessage())
+                .status(400)
+                .title("Bad credentials or user not existent")
+                .build();
+    }
+
 }
