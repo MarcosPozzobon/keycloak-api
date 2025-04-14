@@ -1,5 +1,6 @@
 package com.marcos.desenvolvimento.authorization_ms.controller;
 
+import com.marcos.desenvolvimento.authorization_ms.exception.AuthenticationContextException;
 import com.marcos.desenvolvimento.authorization_ms.service.LoginService;
 import com.marcos.desenvolvimento.authorization_ms.service.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -18,22 +19,12 @@ public class ProtectedController {
     private final LoginService loginService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public HashMap<String, Object> returnOk(@RequestHeader("Authorization") String authorizationHeader) {
-        if (tokenService.isValidToken(authorizationHeader)) {
-            HashMap<String, Object> response = new HashMap<>();
-            response.put("status", 200);
-            response.put("msg", "authenticated");
-            return response;
-        }
-        return null;
-    }
-
-
-    @GetMapping("admin")
     @PreAuthorize("hasRole('ADMIN')")
     public String onlyAdminCanSeeThis(@RequestHeader("Authorization") String authorizationHeader){
-        loginService.verifyUserAuthenticationContext(authorizationHeader);
-        return "failed to validate the token!";
+        if (!loginService.verifyAuthenticationContext(authorizationHeader, "ADMIN")) {
+            throw new AuthenticationContextException("You do not have permission to access this resource.");
+        }
+        return "admin access granted!";
     }
+
 }

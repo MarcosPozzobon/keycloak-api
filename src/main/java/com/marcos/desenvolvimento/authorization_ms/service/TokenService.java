@@ -19,13 +19,16 @@ public class TokenService {
 
     private static final String JWKS_URL = "http://localhost:8080/realms/DESENVOLVIMENTO/protocol/openid-connect/certs";
 
-    public Map<String, Object> getClaims(String validToken) {
+    public JWTClaimsSet getClaims(String token) {
         try {
-            SignedJWT signedJWT = SignedJWT.parse(validToken);
-            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-            return claimsSet.getClaims();
-        } catch (ParseException e) {
-            throw new RuntimeException("Erro ao decodificar token JWT", e);
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

@@ -3,6 +3,7 @@ package com.marcos.desenvolvimento.authorization_ms.service;
 import com.marcos.desenvolvimento.authorization_ms.client.KeycloakClient;
 import com.marcos.desenvolvimento.authorization_ms.dto.request.LoginRequest;
 import com.marcos.desenvolvimento.authorization_ms.dto.response.TokenResponseDTO;
+import com.marcos.desenvolvimento.authorization_ms.exception.AuthenticationContextException;
 import com.marcos.desenvolvimento.authorization_ms.exception.GenericKeycloakException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InvalidLoginRequestException;
@@ -36,18 +37,25 @@ public class LoginService {
     @Value(value = "${spring.security.oauth2.client.registration.keycloak.client-secret}")
     private String clientSecret;
 
-    public void verifyUserAuthenticationContext(String token){
+    public boolean verifyAuthenticationContext(String token, String role){
 
         if(!tokenService.isValidToken(token)){
             throw new GenericKeycloakException();
         }
 
-        var result = redisService.findCachedTokenAndPermissions(token);
-        log.info("Resultado: " + result);
+        var roles = getUserRolesByToken(token); // se for nulo, nao ha dados no redis... logo o token expirou e ele deve logar novamente
 
+        if(roles == null || roles.isEmpty()) {
+            throw new AuthenticationContextException("Log in again.");
+        }
 
+        for(String loadedRole : roles){
+            if(loadedRole.equalsIgnoreCase(role)){
+                return true;
+            }
+        }
 
-
+        return false;
     }
 
 
@@ -102,7 +110,7 @@ public class LoginService {
     public List<String> getUserRolesByToken(String token) {
         var claims = tokenService.getClaims(token);
 
-        Map<String, Object> resourceAccess = (Map<String, Object>) claims.get("resource_access");
+        Map<String, Object> resourceAccess = (Map<String, Object>) claims.getClaims().get("resource_access");//claims.get("resource_access");
         if (resourceAccess == null) {
             return Collections.emptyList();
         }
