@@ -1,6 +1,7 @@
 package com.marcos.desenvolvimento.authorization_ms.service;
 
 import com.marcos.desenvolvimento.authorization_ms.dto.request.RegisterRequest;
+import com.marcos.desenvolvimento.authorization_ms.dto.response.KeycloakUserDTO;
 import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InvalidUserCreationException;
 import com.marcos.desenvolvimento.authorization_ms.exception.UserExistsException;
@@ -104,4 +105,29 @@ public class KeycloakService {
         }
     }
 
+    public List<KeycloakUserDTO> findAll() {
+        List<KeycloakUserDTO> userDTOs = new ArrayList<>();
+        try {
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            List<UserRepresentation> userRepresentations = usersResource.list();
+
+
+            for (UserRepresentation user : userRepresentations) {
+                KeycloakUserDTO dto = new KeycloakUserDTO(
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user.getLastName()
+                );
+                userDTOs.add(dto);
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to fech Keycloak user: {}", e.getMessage(), e);
+        }
+        return userDTOs;
+    }
 }
