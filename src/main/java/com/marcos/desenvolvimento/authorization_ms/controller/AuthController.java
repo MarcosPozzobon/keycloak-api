@@ -18,17 +18,9 @@ public class AuthController {
     private final LoginService loginService;
     private final KeycloakService keycloakService;
 
-
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TokenResponseDTO> login(@RequestBody final LoginRequest loginRequest) {
         return ResponseEntity.status(200).body(loginService.setUserAuthenticationContext(loginRequest));
-    }
-
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> register(@RequestBody final RegisterRequest request) {
-        keycloakService.createUser(request);
-        return ResponseEntity.ok("User successfully registered.");
     }
 }

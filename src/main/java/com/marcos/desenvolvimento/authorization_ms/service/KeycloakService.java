@@ -2,14 +2,12 @@ package com.marcos.desenvolvimento.authorization_ms.service;
 
 import com.marcos.desenvolvimento.authorization_ms.dto.request.RegisterRequest;
 import com.marcos.desenvolvimento.authorization_ms.dto.response.KeycloakUserDTO;
+import com.marcos.desenvolvimento.authorization_ms.exception.GenericInvalidRequestException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InternalServerErrorException;
 import com.marcos.desenvolvimento.authorization_ms.exception.InvalidUserCreationException;
 import com.marcos.desenvolvimento.authorization_ms.exception.UserExistsException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.admin.client.resource.ClientResource;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.stereotype.Service;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -114,7 +112,6 @@ public class KeycloakService {
 
             List<UserRepresentation> userRepresentations = usersResource.list();
 
-
             for (UserRepresentation user : userRepresentations) {
                 KeycloakUserDTO dto = new KeycloakUserDTO(
                         user.getUsername(),
@@ -130,4 +127,91 @@ public class KeycloakService {
         }
         return userDTOs;
     }
+
+    public boolean updateUser(String userId, KeycloakUserDTO dto) {
+        try {
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            UserRepresentation user = usersResource.get(userId).toRepresentation();
+
+            user.setEmail(dto.email());
+            user.setFirstName(dto.firstName());
+            user.setLastName(dto.lastName());
+
+            usersResource.get(userId).update(user);
+            log.info("User updated successfully: {}", userId);
+            return true;
+        } catch (Exception e) {
+            log.error("Exception while updating user: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean deleteUser(String userId) {
+        try {
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            usersResource.get(userId).remove();
+            log.info("User deleted successfully: {}", userId);
+            return true;
+        } catch (Exception e) {
+            log.error("Exception while deleting user: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public KeycloakUserDTO findById(String userId) {
+        try {
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            if(userId == null || userId.isEmpty()){
+                throw new GenericInvalidRequestException("Id cannot be null or empty");
+            }
+
+            UserRepresentation user = usersResource.get(userId).toRepresentation();
+
+            return new KeycloakUserDTO(
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName()
+            );
+        } catch (Exception e) {
+            log.error("Exception while fetching user by ID: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public boolean setUserStatus(String userId, Boolean enable) {
+        try {
+            if (userId == null || userId.isBlank()) {
+                throw new GenericInvalidRequestException("User ID cannot be null or empty");
+            }
+
+            if(enable == null){
+                throw new GenericInvalidRequestException("The second parameter 'enable' cannot be null or empty");
+            }
+
+            Keycloak keycloak = getKeycloakInstance();
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            UserRepresentation user = usersResource.get(userId).toRepresentation();
+            user.setEnabled(enable);
+            usersResource.get(userId).update(user);
+
+            log.info("User {} successfully: {}", enable ? "enabled" : "disabled", userId);
+            return true;
+        } catch (Exception e) {
+            log.error("Error while updating user status: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
 }

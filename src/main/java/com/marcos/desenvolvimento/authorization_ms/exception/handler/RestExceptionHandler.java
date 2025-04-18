@@ -87,4 +87,16 @@ public class RestExceptionHandler {
                 .title("Invalid token!")
                 .build();
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(GenericInvalidRequestException.class)
+    public ExceptionFilters handleGenericGenericInvalidRequestException(final GenericInvalidRequestException ex) {
+        return ExceptionFilters.builder()
+                .timestamp(LocalDateTime.now())
+                .details(ex.getMessage())
+                .status(400)
+                .title("Bad request")
+                .build();
+    }
+
 }

@@ -19,11 +19,12 @@ public class ProtectedController {
     private final LoginService loginService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public String onlyAdminCanSeeThis(@RequestHeader("Authorization") String authorizationHeader){
-        if (!loginService.verifyAuthenticationContext(authorizationHeader, "ADMIN")) {
-            throw new AuthenticationContextException("You do not have permission to access this resource.");
-        }
+        loginService.verifyAuthenticationContext(authorizationHeader, "ADMIN", ProtectedController::showMessage);
+        return "";
+    }
+
+    public static String showMessage(){
         return "admin access granted!";
     }
 

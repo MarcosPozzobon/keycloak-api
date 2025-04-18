@@ -37,8 +37,7 @@ public class LoginService {
     @Value(value = "${spring.security.oauth2.client.registration.keycloak.client-secret}")
     private String clientSecret;
 
-    public boolean verifyAuthenticationContext(String token, String role){
-
+    public void verifyAuthenticationContext(String token, String role, Runnable callback){
         if(!tokenService.isValidToken(token)){
             throw new GenericKeycloakException();
         }
@@ -51,13 +50,12 @@ public class LoginService {
 
         for(String loadedRole : roles){
             if(loadedRole.equalsIgnoreCase(role)){
-                return true;
+                callback.run(); // executa o método callback em caso de sucesso na autenticacao / validacao no contexto de seguranca
+                return;
             }
         }
-
-        return false;
+        throw new AuthenticationContextException("You do not have permission to access this resource.");
     }
-
 
     public TokenResponseDTO setUserAuthenticationContext(final LoginRequest loginRequest){
         if(!isLoginRequestValid(loginRequest)){
