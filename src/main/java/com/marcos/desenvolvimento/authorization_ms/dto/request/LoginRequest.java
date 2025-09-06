@@ -1,4 +1,3 @@
 package com.marcos.desenvolvimento.authorization_ms.dto.request;
 
-public record LoginRequest(String username, String password) {
-}
+public record LoginRequest(String login, String senha) {}

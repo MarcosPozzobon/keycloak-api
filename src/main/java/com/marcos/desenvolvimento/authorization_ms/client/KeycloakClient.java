@@ -1,15 +1,9 @@
 package com.marcos.desenvolvimento.authorization_ms.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -26,13 +20,13 @@ public class KeycloakClient {
     @Value(value = "${spring.security.oauth2.client.registration.keycloak.client-secret}")
     private String clientSecret;
 
-    public String getKeycloakTokenByLoginAndPassword(String username, String password) {
+    public String obterTokenKeycloakPorLoginESenha(String login, String senha) {
         try {
             String body = "grant_type=password"
                     + "&client_id=" + clientId
                     + "&client_secret=" + clientSecret
-                    + "&username=" + username
-                    + "&password=" + password;
+                    + "&username=" + login
+                    + "&password=" + senha;
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(keycloakTokenUrl))
@@ -49,6 +43,5 @@ public class KeycloakClient {
             throw new RuntimeException("Erro ao obter token do Keycloak", e);
         }
     }
-
 
 }

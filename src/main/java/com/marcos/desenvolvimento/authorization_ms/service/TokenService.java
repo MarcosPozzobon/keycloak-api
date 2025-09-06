@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,7 +18,8 @@ import java.util.Map;
 @Service
 public class TokenService {
 
-    private static final String JWKS_URL = "http://localhost:8080/realms/DESENVOLVIMENTO/protocol/openid-connect/certs";
+    @Value(value = "${jwks.url.validator}")
+    private String JWKS_URL;
 
     public JWTClaimsSet getClaims(String token) {
         try {
@@ -32,7 +34,7 @@ public class TokenService {
         }
     }
 
-    public boolean isValidToken(String authorizationHeader) {
+    public boolean isTokenValido(String authorizationHeader) {
         try {
             String token = authorizationHeader.replace("Bearer ", "");
             SignedJWT signedJWT = SignedJWT.parse(token);

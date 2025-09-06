@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ExceptionFilters {
 
-    private String title;
+    private String titulo;
     private Integer status;
-    private String details;
+    private String detalhes;
     private LocalDateTime timestamp;
 
 }
