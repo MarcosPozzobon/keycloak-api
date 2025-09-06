@@ -1,0 +1,29 @@
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+.mvn/wrapper/maven-wrapper-downloader.jar
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+### Eclipse ###
+.project
+.classpath
+.settings/
+bin/
+
+### Logs e Temporários ###
+*.log
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+
+### Sistema ###
+Thumbs.db
+.DS_Store
