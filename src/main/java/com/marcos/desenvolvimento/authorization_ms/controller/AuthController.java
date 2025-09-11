@@ -20,5 +20,4 @@ public class AuthController {
     public ResponseEntity<TokenResponseDTO> login(@RequestBody final LoginRequest loginRequest) {
         return ResponseEntity.status(200).body(loginService.obterToken(loginRequest));
     }
-
 }

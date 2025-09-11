@@ -20,7 +20,6 @@ import java.util.Optional;
 public class LoginService {
 
     private final KeycloakClient keycloakClient;
-    private final TokenService tokenService;
 
     @Value(value = "${spring.security.token.url}")
     private String keycloakTokenUrl;
