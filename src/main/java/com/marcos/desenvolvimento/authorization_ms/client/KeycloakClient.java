@@ -43,5 +43,4 @@ public class KeycloakClient {
             throw new RuntimeException("Erro ao obter token do Keycloak", e);
         }
     }
-
 }

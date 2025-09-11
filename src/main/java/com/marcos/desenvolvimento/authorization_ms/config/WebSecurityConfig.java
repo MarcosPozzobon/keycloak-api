@@ -25,7 +25,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(
                         authorizeConfig -> {
-                            authorizeConfig.requestMatchers("/api/v1/auth/**").permitAll();
+                            authorizeConfig.requestMatchers("/api/v1/auth/login").permitAll();
                             authorizeConfig.anyRequest().authenticated();
                         })
                 .oauth2Login(withDefaults())
