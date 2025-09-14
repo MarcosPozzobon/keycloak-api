@@ -39,7 +39,7 @@ public class LoginService {
                 ).orElse(null);
 
         if(result.contains("invalid_grant") || result.contains("Credenciais inválidas!")){
-            throw new GenericKeycloakException("O usuário não existe ou as credenciais não estão ok.");
+            throw new GenericKeycloakException("O usuário não existe ou as credenciais não conferem.");
         }
 
         JSONObject jsonResponse = new JSONObject(result);
